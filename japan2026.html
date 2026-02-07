@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japan 2026 – Itinerary</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f4f0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const DATES = Array.from({ length: 18 }, (_, i) => {
+      const d = new Date(2026, 1, 9 + i);
+      return {
+        key: `2026-02-${String(9 + i).padStart(2, "0")}`,
+        day: d.toLocaleDateString("en-US", { weekday: "short" }),
+        date: 9 + i,
+        month: "Feb",
+      };
+    });
+
+    const STORAGE_KEY = "itinerary-feb-2026";
+
+    const DEFAULT_DATA = {
+      "2026-02-09": {
+        title: "",
+        items: [
+          { text: "aiport -> hotel", time: "3:30", link: "" },
+          { text: "shinjuku or explore otsuka", time: "5:00", link: "" }
+        ]
+      },
+      "2026-02-10": {
+        title: "yokohama",
+        items: [
+          { text: "nakiryu ticket", time: "8:00", link: "" },
+          { text: "???", time: "8-11", link: "" },
+          { text: "eat at nakiryu", time: "11:00", link: "" },
+          { text: "head to sankeien", time: "1:00", link: "" },
+          { text: "minato mirai/red brick warehouse/chinatown", time: "", link: "" }
+        ]
+      },
+      "2026-02-11": {
+        title: "",
+        items: [
+          { text: "shinjuku -> kawaguchiko", time: "6", link: "" },
+          { text: "arrive @ kawaguchiko", time: "9", link: "" },
+          { text: "explore shrines/pagoda/food/ropeway (prolly not)", time: "day", link: "" }
+        ]
+      },
+      "2026-02-12": {
+        title: "kanazawa day 1",
+        items: [
+          { text: "tokyo -> kanazawa", time: "8:30", link: "" },
+          { text: "arrive @ kanazawa", time: "11:10", link: "" },
+          { text: "kanazawa castle + kenrokuen + samurai district", time: "12:00", link: "" }
+        ]
+      },
+      "2026-02-13": {
+        title: "kanazawa day 2",
+        items: [
+          { text: "kanazawa -> eiheiji", time: "8", link: "" },
+          { text: "arrive @ eiheiji", time: "10:30", link: "" },
+          { text: "eiheiji", time: "day", link: "" },
+          { text: "eiheiji -> kanazawa", time: "3", link: "" },
+          { text: "idk", time: "5", link: "" }
+        ]
+      },
+      "2026-02-14": {
+        title: "kanazawa day 3",
+        items: [
+          { text: "omicho market", time: "8", link: "" },
+          { text: "library", time: "10", link: "" },
+          { text: "idk museums something crafts or something temples or something", time: "day", link: "" },
+          { text: "dinner 予約", time: "5", link: "" }
+        ]
+      },
+      "2026-02-15": {
+        title: "shirakawago/onsen",
+        items: [
+          { text: "kanazawa -> shirakawago", time: "11:10", link: "" },
+          { text: "shirakawago", time: "12:20", link: "" },
+          { text: "shirakawago -> takayama", time: "2:45", link: "" },
+          { text: "takayama -> hirayukan", time: "3:40/4:40", link: "" },
+          { text: "hirayukan", time: "5", link: "" },
+          { text: "onsen", time: "6", link: "" },
+          { text: "dinner", time: "6:30", link: "" },
+          { text: "onsen", time: "8", link: "" }
+        ]
+      },
+      "2026-02-16": {
+        title: "takayama day 1",
+        items: [
+          { text: "onsen", time: "6:30", link: "" },
+          { text: "shinhotoka ropeway", time: "morning", link: "" },
+          { text: "takayama", time: "day", link: "" },
+          { text: "味の与平の予約", time: "6", link: "" },
+          { text: "explore takayama", time: "night", link: "" }
+        ]
+      },
+      "2026-02-17": {
+        title: "takayama day 2",
+        items: [
+          { text: "sanmachi suji", time: "", link: "" },
+          { text: "Sakurayama Hachimangu", time: "", link: "" },
+          { text: "hie shrine", time: "", link: "" },
+          { text: "Takayama Jinya", time: "", link: "" },
+          { text: "Kusakabe Folk Museum", time: "", link: "" },
+          { text: "small bridge near akita shrine", time: "", link: "" },
+          { text: "hida furukawa", time: "", link: "" },
+          { text: "shinshuji", time: "", link: "" },
+          { text: "koi canal", time: "", link: "" }
+        ]
+      },
+      "2026-02-18": {
+        title: "matsumoto day 1",
+        items: [
+          { text: "takayama -> matsumoto", time: "7:50", link: "" },
+          { text: "arrive @ matsumoto", time: "10:30", link: "" },
+          { text: "naraijuku", time: "day", link: "" },
+          { text: "matsumoto castle/streets", time: "night", link: "" }
+        ]
+      },
+      "2026-02-19": {
+        title: "matsumoto day 2",
+        items: [
+          { text: "yohashira jinja, nawate shopping street, matsumoto castle, timepiece, nakamichi street", time: "morning", link: "" },
+          { text: "matsumoto -> suwa", time: "day", link: "" },
+          { text: "suwa", time: "day", link: "https://www.travelynotes.com/blog-japan/discover-suwa-taisha-walking-itineraries-for-shrine-lovers-and-goshuin-collectors" },
+          { text: "tateishi park", time: "sunset", link: "https://www.travelynotes.com/blog-japan/walking-to-tateishi-park-a-real-life-your-name-anime-location-in-suwa" }
+        ]
+      },
+      "2026-02-20": {
+        title: "togakushi",
+        items: [
+          { text: "matsumoto -> nagano", time: "8", link: "" },
+          { text: "nagano -> togakushi", time: "10", link: "" },
+          { text: "togakushi", time: "day", link: "" },
+          { text: "togakushi -> nagano", time: "3:30", link: "" },
+          { text: "nagano", time: "night", link: "" }
+        ]
+      },
+      "2026-02-21": {
+        title: "suisei day",
+        items: [
+          { text: "zenkoji", time: "morning", link: "" },
+          { text: "shinkansen", time: "11:25", link: "" },
+          { text: "suisei", time: "4", link: "" },
+          { text: "suisei start", time: "6", link: "" },
+          { text: "sumida river", time: "night", link: "" }
+        ]
+      },
+      "2026-02-22": {
+        title: "tokyolo",
+        items: []
+      },
+      "2026-02-23": {
+        title: "tokyolo",
+        items: []
+      },
+      "2026-02-24": {
+        title: "tokyolo",
+        items: []
+      },
+      "2026-02-25": {
+        title: "tokyolo",
+        items: []
+      },
+      "2026-02-26": {
+        title: "home :(",
+        items: []
+      }
+    };
+
+    function ItemRow({ item, idx, isExpanded, onRemove, onEdit, onDragStart, onDragOver, onDragEnd, isDragging, isDragOver }) {
+      const [editing, setEditing] = useState(false);
+      const [editText, setEditText] = useState("");
+      const [editTime, setEditTime] = useState("");
+      const [editLink, setEditLink] = useState("");
+      const textRef = useRef(null);
+      const rowRef = useRef(null);
+
+      const text = typeof item === "string" ? item : item.text;
+      const time = typeof item === "string" ? "" : item.time;
+      const link = typeof item === "string" ? "" : (item.link || "");
+
+      const startEdit = (e) => {
+        if (!isExpanded) return;
+        e.stopPropagation();
+        setEditText(text);
+        setEditTime(time);
+        setEditLink(link);
+        setEditing(true);
+      };
+
+      useEffect(() => {
+        if (editing && textRef.current) textRef.current.focus();
+      }, [editing]);
+
+      const commitEdit = () => {
+        const trimmed = editText.trim();
+        if (trimmed) {
+          onEdit(idx, { text: trimmed, time: editTime.trim(), link: editLink.trim() });
+        }
+        setEditing(false);
+      };
+
+      if (editing) {
+        return (
+          <div
+            data-itemidx={idx}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "4px 0",
+            }}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                commitEdit();
+              }
+            }}
+          >
+            <span style={{ color: "#d4d0c8", userSelect: "none", fontSize: 13, flexShrink: 0 }}>⠿</span>
+            <input
+              value={editTime}
+              onChange={(e) => setEditTime(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+              placeholder="Time"
+              style={{
+                width: 62,
+                flexShrink: 0,
+                border: "none",
+                borderBottom: "1px solid #ddd",
+                padding: "4px 0",
+                fontSize: 12,
+                fontFamily: "'DM Mono', monospace",
+                color: "#b07d4b",
+                outline: "none",
+                background: "transparent",
+                textAlign: "center",
+              }}
+            />
+            <input
+              ref={textRef}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+              style={{
+                flex: 1,
+                border: "none",
+                borderBottom: "1px solid #ddd",
+                padding: "4px 0",
+                fontSize: 14,
+                fontFamily: "'Newsreader', Georgia, serif",
+                color: "#333",
+                outline: "none",
+                background: "transparent",
+              }}
+            />
+            <input
+              value={editLink}
+              onChange={(e) => setEditLink(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+              placeholder="Link"
+              style={{
+                width: 80,
+                flexShrink: 0,
+                border: "none",
+                borderBottom: "1px solid #ddd",
+                padding: "4px 0",
+                fontSize: 11,
+                fontFamily: "'DM Mono', monospace",
+                color: "#6a9fb5",
+                outline: "none",
+                background: "transparent",
+                textAlign: "center",
+              }}
+            />
+          </div>
+        );
+      }
+
+      return (
+        <div
+          ref={rowRef}
+          draggable={isExpanded}
+          onDragStart={(e) => {
+            if (!isExpanded) return;
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", idx.toString());
+            onDragStart(idx);
+          }}
+          onDragOver={(e) => {
+            if (!isExpanded) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            onDragOver(idx);
+          }}
+          onDragEnd={onDragEnd}
+          onDrop={(e) => {
+            e.preventDefault();
+            onDragEnd();
+          }}
+          data-itemidx={idx}
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 10,
+            fontFamily: "'Newsreader', Georgia, serif",
+            fontSize: 15,
+            color: "#444",
+            lineHeight: 1.5,
+            padding: "3px 0",
+            borderRadius: 6,
+            background: isDragging ? "#f0ede8" : "transparent",
+            opacity: isDragging ? 0.5 : 1,
+            borderTop: isDragOver ? "2px solid #b07d4b" : "2px solid transparent",
+            transition: "background 0.1s, border 0.1s",
+            cursor: isExpanded ? "grab" : "default",
+          }}
+        >
+          {isExpanded ? (
+            <span
+              style={{
+                color: "#d4d0c8",
+                userSelect: "none",
+                marginTop: 1,
+                fontSize: 13,
+                cursor: "grab",
+                flexShrink: 0,
+              }}
+            >
+              ⠿
+            </span>
+          ) : (
+            <span style={{ color: "#ccc", userSelect: "none", marginTop: 1 }}>–</span>
+          )}
+          {time && (
+            <span
+              onClick={startEdit}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 12,
+                color: "#b07d4b",
+                minWidth: 52,
+                flexShrink: 0,
+                marginTop: 2,
+                cursor: isExpanded ? "text" : "default",
+              }}
+            >
+              {time}
+            </span>
+          )}
+          <span
+            onClick={startEdit}
+            style={{
+              flex: 1,
+              cursor: isExpanded ? "text" : "default",
+              borderRadius: 3,
+            }}
+          >
+            {text}
+            {link && (
+              <>
+                {" "}
+                <a
+                  href={link.startsWith("http") ? link : `https://${link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-block",
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: 11,
+                    color: "#6a9fb5",
+                    background: "#eef5f8",
+                    padding: "1px 7px",
+                    borderRadius: 4,
+                    textDecoration: "none",
+                    verticalAlign: "middle",
+                    lineHeight: 1.6,
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.background = "#dceef4")}
+                  onMouseLeave={(e) => (e.target.style.background = "#eef5f8")}
+                >
+                  ↗ link
+                </a>
+              </>
+            )}
+          </span>
+          {isExpanded && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(idx); }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#ccc",
+                cursor: "pointer",
+                fontSize: 14,
+                padding: "0 2px",
+                flexShrink: 0,
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.target.style.color = "#e55")}
+              onMouseLeave={(e) => (e.target.style.color = "#ccc")}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    function DayCard({ info, items, title, onUpdate, onTitleChange, isExpanded, onToggle }) {
+      const [input, setInput] = useState("");
+      const [timeInput, setTimeInput] = useState("");
+      const [linkInput, setLinkInput] = useState("");
+      const [editingTitle, setEditingTitle] = useState(false);
+      const [titleDraft, setTitleDraft] = useState(title || "");
+      const [dragFrom, setDragFrom] = useState(null);
+      const [dragOver, setDragOver] = useState(null);
+      const inputRef = useRef(null);
+      const titleRef = useRef(null);
+      const isWeekend = info.day === "Sat" || info.day === "Sun";
+
+      useEffect(() => {
+        if (isExpanded && !editingTitle && inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, [isExpanded, editingTitle]);
+
+      useEffect(() => {
+        if (editingTitle && titleRef.current) {
+          titleRef.current.focus();
+        }
+      }, [editingTitle]);
+
+      useEffect(() => {
+        setTitleDraft(title || "");
+      }, [title]);
+
+      const addItem = () => {
+        const trimmed = input.trim();
+        if (!trimmed) return;
+        onUpdate([...items, { text: trimmed, time: timeInput.trim(), link: linkInput.trim() }]);
+        setInput("");
+        setTimeInput("");
+        setLinkInput("");
+      };
+
+      const removeItem = (idx) => {
+        onUpdate(items.filter((_, i) => i !== idx));
+      };
+
+      const editItem = (idx, updated) => {
+        const newItems = [...items];
+        newItems[idx] = updated;
+        onUpdate(newItems);
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === "Enter") addItem();
+        if (e.key === "Escape") onToggle();
+      };
+
+      const commitTitle = () => {
+        onTitleChange(titleDraft.trim());
+        setEditingTitle(false);
+      };
+
+      const handleDragStart = useCallback((idx) => setDragFrom(idx), []);
+      const handleDragOver = useCallback((idx) => setDragOver(idx), []);
+      const handleDragEnd = useCallback(() => {
+        if (dragFrom !== null && dragOver !== null && dragFrom !== dragOver) {
+          const newItems = [...items];
+          const [moved] = newItems.splice(dragFrom, 1);
+          newItems.splice(dragOver, 0, moved);
+          onUpdate(newItems);
+        }
+        setDragFrom(null);
+        setDragOver(null);
+      }, [dragFrom, dragOver, items, onUpdate]);
+
+      return (
+        <div
+          style={{
+            background: isExpanded ? "#fff" : items.length > 0 ? "#fafaf8" : "#fff",
+            border: isExpanded ? "1.5px solid #222" : "1px solid #e8e6e1",
+            borderRadius: 10,
+            padding: isExpanded ? "20px 22px" : "16px 20px",
+            cursor: isExpanded ? "default" : "pointer",
+            transition: "all 0.2s ease",
+            position: "relative",
+          }}
+          onClick={() => !isExpanded && onToggle()}
+        >
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: isExpanded ? 16 : items.length > 0 ? 10 : 0 }}>
+            <span
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 28,
+                fontWeight: 500,
+                color: "#222",
+                lineHeight: 1,
+              }}
+            >
+              {info.date}
+            </span>
+            <span
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 12,
+                textTransform: "uppercase",
+                letterSpacing: 1.5,
+                color: isWeekend ? "#b07d4b" : "#999",
+                fontWeight: 500,
+              }}
+            >
+              {info.day}
+            </span>
+            {!isExpanded && items.length > 0 && (
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 11,
+                  color: "#bbb",
+                }}
+              >
+                {items.length} {items.length === 1 ? "item" : "items"}
+              </span>
+            )}
+            {isExpanded && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggle(); }}
+                style={{
+                  marginLeft: "auto",
+                  background: "none",
+                  border: "none",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  color: "#999",
+                  padding: "0 4px",
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {/* Day title */}
+          {(title || isExpanded) && (
+            <div style={{ marginBottom: items.length > 0 || isExpanded ? 12 : 0 }}>
+              {isExpanded && editingTitle ? (
+                <input
+                  ref={titleRef}
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onBlur={commitTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitTitle();
+                    if (e.key === "Escape") { setTitleDraft(title || ""); setEditingTitle(false); }
+                  }}
+                  placeholder="e.g. Kyoto, Shopping Day, Rest..."
+                  style={{
+                    border: "none",
+                    borderBottom: "1px solid #ddd",
+                    padding: "4px 0",
+                    fontSize: 14,
+                    fontFamily: "'Newsreader', Georgia, serif",
+                    fontStyle: "italic",
+                    color: "#888",
+                    outline: "none",
+                    background: "transparent",
+                    width: "100%",
+                  }}
+                />
+              ) : (
+                <div
+                  onClick={(e) => {
+                    if (isExpanded) { e.stopPropagation(); setEditingTitle(true); }
+                  }}
+                  style={{
+                    fontFamily: "'Newsreader', Georgia, serif",
+                    fontSize: 14,
+                    fontStyle: "italic",
+                    color: title ? "#8a7a65" : "#ccc",
+                    cursor: isExpanded ? "text" : "default",
+                    padding: "2px 0",
+                  }}
+                >
+                  {title || (isExpanded ? "add a title..." : "")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Items list */}
+          {items.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {items.map((item, idx) => (
+                <ItemRow
+                  key={idx}
+                  item={item}
+                  idx={idx}
+                  isExpanded={isExpanded}
+                  onRemove={removeItem}
+                  onEdit={editItem}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  isDragging={dragFrom === idx}
+                  isDragOver={dragOver === idx && dragFrom !== idx}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Input */}
+          {isExpanded && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                <input
+                  value={timeInput}
+                  onChange={(e) => setTimeInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Time"
+                  style={{
+                    width: 68,
+                    flexShrink: 0,
+                    border: "none",
+                    borderBottom: "1px solid #ddd",
+                    padding: "8px 0",
+                    fontSize: 13,
+                    fontFamily: "'DM Mono', monospace",
+                    color: "#b07d4b",
+                    outline: "none",
+                    background: "transparent",
+                    textAlign: "center",
+                  }}
+                />
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Add something..."
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderBottom: "1px solid #ddd",
+                    padding: "8px 0",
+                    fontSize: 14,
+                    fontFamily: "'Newsreader', Georgia, serif",
+                    color: "#333",
+                    outline: "none",
+                    background: "transparent",
+                  }}
+                />
+                <button
+                  onClick={addItem}
+                  disabled={!input.trim()}
+                  style={{
+                    background: input.trim() ? "#222" : "#eee",
+                    color: input.trim() ? "#fff" : "#bbb",
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "6px 14px",
+                    fontSize: 13,
+                    fontFamily: "'DM Mono', monospace",
+                    cursor: input.trim() ? "pointer" : "default",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 6, paddingLeft: 76 }}>
+                <input
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Link (optional)"
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderBottom: "1px solid #e8e6e1",
+                    padding: "6px 0",
+                    fontSize: 12,
+                    fontFamily: "'DM Mono', monospace",
+                    color: "#6a9fb5",
+                    outline: "none",
+                    background: "transparent",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function Itinerary() {
+      const [data, setData] = useState({});
+      const [expandedDay, setExpandedDay] = useState(null);
+      const [loaded, setLoaded] = useState(false);
+
+      // Load from localStorage
+      useEffect(() => {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const migrated = {};
+            for (const [key, val] of Object.entries(parsed)) {
+              if (Array.isArray(val)) {
+                migrated[key] = { items: val.map(v => typeof v === "string" ? { text: v, time: "" } : v), title: "" };
+              } else {
+                const items = (val.items || []).map(v => typeof v === "string" ? { text: v, time: "" } : v);
+                migrated[key] = { ...val, items };
+              }
+            }
+            setData(migrated);
+          } else {
+            setData(DEFAULT_DATA);
+          }
+        } catch (e) {
+          setData(DEFAULT_DATA);
+        }
+        setLoaded(true);
+      }, []);
+
+      // Save to localStorage
+      useEffect(() => {
+        if (!loaded) return;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.error("Failed to save:", e);
+        }
+      }, [data, loaded]);
+
+      const updateDay = (key, items) => {
+        setData((prev) => ({
+          ...prev,
+          [key]: { ...prev[key], items, title: prev[key]?.title || "" },
+        }));
+      };
+
+      const updateTitle = (key, title) => {
+        setData((prev) => ({
+          ...prev,
+          [key]: { ...prev[key], title, items: prev[key]?.items || [] },
+        }));
+      };
+
+      const totalItems = Object.values(data).reduce((s, d) => s + (d.items?.length || 0), 0);
+
+      if (!loaded) return null;
+
+      return (
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#f5f4f0",
+            padding: "48px 20px 80px",
+          }}
+        >
+          <div style={{ maxWidth: 520, margin: "0 auto" }}>
+            {/* Header */}
+            <header style={{ marginBottom: 40, textAlign: "center" }}>
+              <p
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 11,
+                  letterSpacing: 3,
+                  textTransform: "uppercase",
+                  color: "#999",
+                  marginBottom: 8,
+                }}
+              >
+                Japan 2026
+              </p>
+              <h1
+                style={{
+                  fontFamily: "'Newsreader', Georgia, serif",
+                  fontSize: 36,
+                  fontWeight: 300,
+                  color: "#222",
+                  margin: 0,
+                  fontStyle: "italic",
+                }}
+              >
+                Itinerary
+              </h1>
+              <p
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 12,
+                  color: "#bbb",
+                  marginTop: 10,
+                }}
+              >
+                {totalItems === 0
+                  ? "tap a date to start planning"
+                  : `${totalItems} ${totalItems === 1 ? "item" : "items"} planned`}
+              </p>
+            </header>
+
+            {/* Date cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {DATES.map((info) => (
+                <DayCard
+                  key={info.key}
+                  info={info}
+                  items={data[info.key]?.items || []}
+                  title={data[info.key]?.title || ""}
+                  onUpdate={(items) => updateDay(info.key, items)}
+                  onTitleChange={(title) => updateTitle(info.key, title)}
+                  isExpanded={expandedDay === info.key}
+                  onToggle={() =>
+                    setExpandedDay((prev) => (prev === info.key ? null : info.key))
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Itinerary />);
+  </script>
+</body>
+</html>
